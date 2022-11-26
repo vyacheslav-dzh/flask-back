@@ -98,8 +98,8 @@ class Pdf2Tiles:
     def run(self, path_to_pdf):
         self.__create_reader__(path_to_pdf)
         self.__create_pdf__()
-        self.__create_image__(800)
-        print('done')
+        path_list = self.__create_image__(800)
+        return path_list
 
     def __create_reader__(self, path_to_pdf):
         self.path_to_pdf = path_to_pdf
@@ -143,9 +143,15 @@ class Pdf2Tiles:
             poppler_path=self.__POPPLER__
         )
 
+        path_list = []
+
         for i, image_high in enumerate(images_high_quality):
             if not os.path.exists(f'{self.project_dir}\\{i}'):
                 os.mkdir(f'{self.project_dir}\\{self.pages[i]["layerName"]}')
+
+            # path_list.append(f'{self.project_dir}\\{self.pages[i]["layerName"]}')
+            page_dict = {}
+            page_dict['path'] = f'{self.project_dir}\\{self.pages[i]["layerName"]}'
 
             image_medium = images_medium_quality[i]
             image_low = images_low_quality[i]
@@ -157,7 +163,12 @@ class Pdf2Tiles:
 
             original_zoom = math.ceil(math.log(number_tiles, 2))
 
+            page_dict['zoom'] = original_zoom
             # dbmanager.create_blueprint(dbmanager.get_last_id(), blueprints_list[i]['name'], f'{project_name}\{i}', original_zoom)
-
+            path_list.append(page_dict)
+            
             __create_tiles__(image_high, image_medium, image_low, original_zoom,
                                   f'{self.project_dir}\\{self.pages[i]["layerName"]}\\')
+        
+        return path_list
+
