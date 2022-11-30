@@ -1,13 +1,14 @@
 from PyPDF2 import PdfWriter, PdfReader
 from pdf2image import convert_from_path
+from app import app
 from PIL import Image
 import shutil
 import os
 import math
 
 
-PROJECT_DIR = 'C:\\Работа\\Гуртяков\\flask-back'
-CUR_DIR = 'C:\\Работа\\Гуртяков\\flask-back\\app\\lib'
+PROJECT_DIR = app.config['PROJECTS_DIR']
+CUR_DIR = 'C:\\Работа\\Гуртяков\\flask-back\\app\\lib\\pdf2tiles'
 
 
 def __create_tiles__(img_high, img_medium, img_low, max_zoom, path):
@@ -107,7 +108,7 @@ class Pdf2Tiles:
 
     def __create_pdf__(self):
         for page in self.pages:
-            self.__WRITER__.addPage(self.reader.getPage(page['layerNum'] - 1))
+            self.__WRITER__.addPage(self.reader.getPage(page['pageNum'] - 1))
 
         with open(f"{self.project_dir}\\{self.project_name}.pdf", "wb") as f:
             self.__WRITER__.write(f)
@@ -146,12 +147,12 @@ class Pdf2Tiles:
         path_list = []
 
         for i, image_high in enumerate(images_high_quality):
-            if not os.path.exists(f'{self.project_dir}\\{i}'):
-                os.mkdir(f'{self.project_dir}\\{self.pages[i]["layerName"]}')
+            if not os.path.exists(f'{self.project_dir}\\{self.pages[i]["pageName"]}'):
+                os.mkdir(f'{self.project_dir}\\{self.pages[i]["pageName"]}')
 
-            # path_list.append(f'{self.project_dir}\\{self.pages[i]["layerName"]}')
+            # path_list.append(f'{self.project_dir}\\{self.pages[i]["pageName"]}')
             page_dict = {}
-            page_dict['path'] = f'{self.project_dir}\\{self.pages[i]["layerName"]}'
+            page_dict['path'] = f'{self.project_dir}\\{self.pages[i]["pageName"]}'
 
             image_medium = images_medium_quality[i]
             image_low = images_low_quality[i]
@@ -168,7 +169,7 @@ class Pdf2Tiles:
             path_list.append(page_dict)
             
             __create_tiles__(image_high, image_medium, image_low, original_zoom,
-                                  f'{self.project_dir}\\{self.pages[i]["layerName"]}\\')
+                                  f'{self.project_dir}\\{self.pages[i]["pageName"]}\\')
         
         return path_list
 

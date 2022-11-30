@@ -10,3 +10,4 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_HEADERS = 'Content-Type'
     UPLOAD_FOLDER = 'C:\\Работа\\Гуртяков\\flask-back\\app\\downloads'
+    PROJECTS_DIR = 'C:\\Работа\\Гуртяков\\flask-back\\projects'

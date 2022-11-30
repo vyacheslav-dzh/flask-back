@@ -1,10 +1,12 @@
-from flask import request
-from app import app
+# -*- coding: utf-8 -*-
+
+from flask import request, jsonify, send_file
+from app import app, db
 from .lib import Pdf2Tiles
 from flask_cors import cross_origin
 import os
 
-from models import Project, Page, db_session
+from .models import Project, Page
 
 
 @app.route('/add_project', methods=['POST', 'OPTIONS'])
@@ -12,33 +14,34 @@ from models import Project, Page, db_session
 def add_project():
     response = request.json
     project_name = response['projectName']
-    layers = response['layersList']
+    pages = response['pagesList']
 
-    for layer in layers:
-        layer['layerNum'] = int(layer['layerNum'])
+    for page in pages:
+        page['pageNum'] = int(page['pageNum'])
 
     filename = response['filename']
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    pdf2tiles = Pdf2Tiles(project_name, layers)
+    pdf2tiles = Pdf2Tiles(project_name, pages)
     path_list = pdf2tiles.run(file_path)
 
     project = Project(
-        name   = project_name
+        name=project_name
     )
-    db_session.add(project)
-    db_session.commit()
+
+    db.session.add(project)
+    db.session.commit()
 
     project_id = project.id
 
-    for i in range(len(layers)):
+    for i in range(len(pages)):
         page = Page(
-            project_id = project_id,
-            name   = layers[i]['layerName'],
-            path = path_list[i]['path'],
-            max_zoom = path_list[i]['zoom']
+            project_id=project_id,
+            name=pages[i]['pageName'],
+            path=path_list[i]['path'],
+            max_zoom=path_list[i]['zoom']
         )
-        db_session.add(page)
-        db_session.commit()
+        db.session.add(page)
+        db.session.commit()
 
     return '', 200
 
@@ -53,10 +56,31 @@ def upload_pdf():
     return '', 200
 
 
-@app.route("/projects/", methods=["POST"])
+@app.route("/projects", methods=["GET"])
 def get_projects():
-    return Project.query.all()
+    response = Project.query.all()
+    return jsonify([i.serialize for i in response])
 
-@app.route("/pages/<int:id>", methods=["POST"])
+
+@app.route("/pages/<int:id>", methods=["GET"])
 def get_pages(id):
-    return Page.query.filter(Page.project_id==id).all()
+    response = Page.query.filter(Page.project_id == id).all()
+    return jsonify([i.serialize for i in response])
+
+
+@app.route("/get_tile/<string:project_name>/<string:page_name>/<int:z>/<int:x>x<int:y>.png", methods=["GET"])
+def get_tile(project_name, page_name, z, x, y):
+    try:
+        path = os.path.join(app.config['PROJECTS_DIR'], f'{project_name}\\{page_name}\\{z}\\{y}x{x}.png')
+        return send_file(path)
+    except FileNotFoundError:
+        return '', 404
+
+
+
+# @app.route('/delete_table', methods=['GET'])
+# def delete_tables():
+#     Project.query.delete()
+#     Page.query.delete()
+#     db.session.commit()
+#     return '', 200

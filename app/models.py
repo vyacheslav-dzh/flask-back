@@ -8,8 +8,8 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 #                                          autoflush=False,
 #                                          bind=engine))
 
+
 class Project(db.Model):
-    __tablename__ = 'projects'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode(255), unique=True)
@@ -18,9 +18,15 @@ class Project(db.Model):
     def __repr__(self):
         return '<Project {}>'.format(self.name)
 
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
 
 class Page(db.Model):
-    __tablename__ = 'pages'
 
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
@@ -30,3 +36,13 @@ class Page(db.Model):
 
     def __repr__(self):
         return '<Page {}>'.format(self.name)
+
+    @property
+    def serialize(self):
+        return {
+            'id': self.id,
+            'project_id': self.project_id,
+            'name': self.name,
+            'path': self.path,
+            'max_zoom': self.max_zoom
+        }
