@@ -6,7 +6,7 @@ from .lib import Pdf2Tiles
 from flask_cors import cross_origin
 import os
 
-from .models import Project, Page
+from .models import Project, Page, Layer, User, Marker, Сomment
 
 
 @app.route('/add_project', methods=['POST', 'OPTIONS'])
@@ -76,7 +76,28 @@ def get_tile(project_name, page_name, z, x, y):
     except FileNotFoundError:
         return '', 404
 
+@app.route("/layers/<int:id>", methods=["GET"])
+def get_layers(id):
+    response = Layer.query.filter(Layer.page_id == id).all()
+    return jsonify([i.serialize for i in response])
 
+
+@app.route("/markers/<int:id>", methods=["GET"])
+def get_markers(id):
+    response = Marker.query.filter(Marker.layer_id == id).all()
+    return jsonify([i.serialize for i in response])
+
+
+@app.route("/comments/<int:id>", methods=["GET"])
+def get_comments(id):
+    response = Сomment.query.filter(Сomment.marker_id == id).all()
+    return jsonify([i.serialize for i in response])
+
+
+@app.route("/users", methods=["GET"])
+def get_users():
+    response = User.query.all()
+    return jsonify([i.serialize for i in response])
 
 # @app.route('/delete_table', methods=['GET'])
 # def delete_tables():
