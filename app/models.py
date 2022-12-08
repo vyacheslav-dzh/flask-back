@@ -47,8 +47,8 @@ class Page(db.Model):
             'max_zoom': self.max_zoom
         }
 
-class User(db.Model):
 
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.Unicode(255))
 
@@ -62,8 +62,8 @@ class User(db.Model):
             'login': self.login
         }
 
+
 class Layer(db.Model):
-    
     id = db.Column(db.Integer, primary_key=True)
     page_id = db.Column(db.Integer, db.ForeignKey('page.id'))
     name = db.Column(db.Unicode(255))
@@ -79,8 +79,8 @@ class Layer(db.Model):
             "name": self.name
         }
 
-class Marker(db.Model):
 
+class Marker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     layer_id = db.Column(db.Integer, db.ForeignKey('layer.id'))
     header = db.Column(db.Unicode(255))
@@ -88,7 +88,6 @@ class Marker(db.Model):
     x_axis = db.Column(db.Integer)
     y_axis = db.Column(db.Integer)
     color = db.Column(db.Unicode(255))
-   
 
     def __repr__(self):
         return '<Layer {}>'.format(self.name)
@@ -104,14 +103,13 @@ class Marker(db.Model):
             "color": self.color
         }
 
-class Сomment(db.Model):
 
+class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     marker_id = db.Column(db.Integer, db.ForeignKey('marker.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     text = db.Column(db.Unicode(255))
     date = db.Column(db.Unicode(255))
-   
 
     def __repr__(self):
         return '<Layer {}>'.format(self.name)
