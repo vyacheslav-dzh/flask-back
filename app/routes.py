@@ -6,7 +6,7 @@ from .lib import Pdf2Tiles
 from flask_cors import cross_origin
 import os
 
-from .models import Project, Page, Layer, User, Marker, Сomment
+from .models import Project, Page, Layer, User, Marker, Comment
 
 
 @app.route('/add_project', methods=['POST', 'OPTIONS'])
@@ -76,6 +76,69 @@ def get_tile(project_name, page_name, z, x, y):
     except FileNotFoundError:
         return '', 404
 
+
+@app.route('/add_layer', methods=['POST'])
+def add_layer():
+    response = request.json
+    page_id = response['pageId']
+    layer_name = response['layerName']
+
+    layer = Layer(
+        page_id=page_id,
+        name=layer_name
+    )
+    db.session.add(layer)
+    db.session.commit()
+
+    return '', 200
+
+
+@app.route('/add_marker', methods=['POST'])
+def add_marker():
+    response = request.json
+    layer_id = response['layerId']
+    header = response['header']
+    text = response['text']
+    x = response['x']
+    y = response['y']
+    color = response['color']
+
+    marker = Marker(
+        layer_id=layer_id,
+        header=header,
+        text=text,
+        x_axis=x,
+        y_axis=y,
+        color=color
+    )
+
+    db.session.add(marker)
+    db.session.commit()
+
+    return '', 200
+
+
+@app.route('/add_comment', methods=['POST'])
+def add_comment():
+    response = request.json
+    marker_id = response['markerId']
+    user_id = response['userId']
+    text = response['text']
+    date = response['date']
+
+    comment = Comment(
+        marker_id=marker_id,
+        user_id=user_id,
+        text=text,
+        date=date
+    )
+
+    db.session.add(comment)
+    db.session.commit()
+
+    return '', 200
+
+
 @app.route("/layers/<int:id>", methods=["GET"])
 def get_layers(id):
     response = Layer.query.filter(Layer.page_id == id).all()
@@ -90,7 +153,7 @@ def get_markers(id):
 
 @app.route("/comments/<int:id>", methods=["GET"])
 def get_comments(id):
-    response = Сomment.query.filter(Сomment.marker_id == id).all()
+    response = Comment.query.filter(Comment.marker_id == id).all()
     return jsonify([i.serialize for i in response])
 
 
@@ -98,6 +161,7 @@ def get_comments(id):
 def get_users():
     response = User.query.all()
     return jsonify([i.serialize for i in response])
+
 
 # @app.route('/delete_table', methods=['GET'])
 # def delete_tables():
