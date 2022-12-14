@@ -2,7 +2,7 @@
 
 from flask import request, jsonify, send_file
 from app import app, db
-from .lib import Pdf2Tiles
+from .lib import Pdf2Tiles, delete_path
 from flask_cors import cross_origin
 import os
 
@@ -161,6 +161,151 @@ def get_comments(id):
 def get_users():
     response = User.query.all()
     return jsonify([i.serialize for i in response])
+
+
+@app.route("/delete_user/<int:id>", methods=["GET"])
+def delete_user(id):
+    user = User.query.get(id)
+
+    comments = Comment.query.filter(Comment.user_id == id).all()
+    for comment in comments:
+        db.session.delete(comment)
+
+    db.session.delete(user)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/delete_project/<int:id>", methods=["GET"])
+def delete_project(id):
+    project = Project.query.get(id)
+ 
+    for page in Page.query.filter(Page.project_id == id).all():
+        for layer in Layer.query.filter(Layer.page_id == page.id).all():
+            for marker in Marker.query.filter(Marker.layer_id == layer.id).all(): 
+                for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+                    db.session.delete(comment)
+                db.session.delete(marker)
+            db.session.delete(layer)
+        db.session.delete(page)
+
+    db.session.delete(project)
+    db.session.commit()
+
+    delete_path(project.name)
+
+    return '', 200
+
+
+@app.route("/delete_page/<int:id>", methods=["GET"])
+def delete_page(id):
+    page = Page.query.get(id)
+
+    for layer in Layer.query.filter(Layer.page_id == page.id).all():
+        for marker in Marker.query.filter(Marker.layer_id == layer.id).all():
+            for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+                db.session.delete(comment)
+            db.session.delete(marker)
+        db.session.delete(layer)
+
+    db.session.delete(page)
+    db.session.commit()
+
+    project = Project.query.filter(Project.id == page.project_id).one()
+    delete_path(project.name, page.name)
+    
+    return '', 200
+
+
+@app.route("/delete_layer/<int:id>", methods=["GET"])
+def delete_layer(id):
+    layer = Layer.query.get(id)
+
+    for marker in Marker.query.filter(Marker.layer_id == layer.id).all():
+        for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+            db.session.delete(comment)
+        db.session.delete(marker)
+
+    db.session.delete(layer)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/delete_marker/<int:id>", methods=["GET"])
+def delete_marker(id):
+    marker = Marker.query.get(id)
+
+    for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+        db.session.delete(comment)
+
+    db.session.delete(marker)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/delete_comment/<int:id>", methods=["GET"])
+def delete_comment(id):
+    comment = Marker.query.get(id)
+
+    db.session.delete(comment)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/update_project/<int:id>/<string:name>", methods=['POST', 'OPTIONS'])
+@cross_origin()
+def update_project():
+    response = request.json
+    project = Project.query.get(response["projectID"])
+    project.name = response["projectName"]
+    db.session.add(project)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/update_page/<int:id>/<string:name>", methods=['POST', 'OPTIONS'])
+@cross_origin()
+def update_page():
+    response = request.json
+    page = Page.query.get(response["pageID"])
+    page.name = response["pageName"]
+    db.session.add(page)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/update_layer/<int:id>/<string:name>", methods=['POST', 'OPTIONS'])
+@cross_origin()
+def update_layer():
+    response = request.json
+    layer = Layer.query.get(response["layerID"])
+    layer.name = response["layerName"]
+    db.session.add(layer)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/update_marker", methods=['POST', 'OPTIONS'])
+@cross_origin()
+def update_marker():
+    response = request.json
+    marker = Marker.query.get(response["markerID"])
+    marker.header = response["markerHeader"]
+    marker.text = response["markerText"]
+    db.session.add(marker)
+    db.session.commit()
+    return '', 200
+
+
+@app.route("/update_marker", methods=['POST', 'OPTIONS'])
+@cross_origin()
+def update_comment():
+    response = request.json
+    comment = Comment.query.get(response["commentID"])
+    comment.text = response['commentText']
+    db.session.add(comment)
+    db.session.commit()
+    return '', 200
 
 
 # @app.route('/delete_table', methods=['GET'])
