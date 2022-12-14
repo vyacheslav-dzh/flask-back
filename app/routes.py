@@ -77,7 +77,8 @@ def get_tile(project_name, page_name, z, x, y):
         return '', 404
 
 
-@app.route('/add_layer', methods=['POST'])
+@app.route('/add_layer', methods=['POST', 'OPTIONS'])
+@cross_origin()
 def add_layer():
     response = request.json
     page_id = response['pageId']
@@ -93,7 +94,8 @@ def add_layer():
     return '', 200
 
 
-@app.route('/add_marker', methods=['POST'])
+@app.route('/add_marker', methods=['POST', 'OPTIONS'])
+@cross_origin()
 def add_marker():
     response = request.json
     layer_id = response['layerId']
@@ -118,7 +120,8 @@ def add_marker():
     return '', 200
 
 
-@app.route('/add_comment', methods=['POST'])
+@app.route('/add_comment', methods=['POST', 'OPTIONS'])
+@cross_origin()
 def add_comment():
     response = request.json
     marker_id = response['markerId']
