@@ -252,7 +252,7 @@ def delete_comment(id):
     return '', 200
 
 
-@app.route("/update_project/<int:id>/<string:name>", methods=['POST', 'OPTIONS'])
+@app.route("/update_project", methods=['POST', 'OPTIONS'])
 @cross_origin()
 def update_project():
     response = request.json
@@ -263,7 +263,7 @@ def update_project():
     return '', 200
 
 
-@app.route("/update_page/<int:id>/<string:name>", methods=['POST', 'OPTIONS'])
+@app.route("/update_page", methods=['POST', 'OPTIONS'])
 @cross_origin()
 def update_page():
     response = request.json
@@ -274,7 +274,7 @@ def update_page():
     return '', 200
 
 
-@app.route("/update_layer/<int:id>/<string:name>", methods=['POST', 'OPTIONS'])
+@app.route("/update_layer", methods=['POST', 'OPTIONS'])
 @cross_origin()
 def update_layer():
     response = request.json
