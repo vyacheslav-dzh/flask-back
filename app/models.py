@@ -88,8 +88,8 @@ class Marker(db.Model):
     layer_id = db.Column(db.Integer, db.ForeignKey('layer.id'))
     header = db.Column(db.Unicode(255))
     text = db.Column(db.Unicode(255))
-    x_axis = db.Column(db.Integer)
-    y_axis = db.Column(db.Integer)
+    x_axis = db.Column(db.Float)
+    y_axis = db.Column(db.Float)
     color = db.Column(db.Unicode(255))
     comments = relationship("Comment", cascade="all,delete")
 
@@ -103,7 +103,8 @@ class Marker(db.Model):
             'layer_id': self.layer_id,
             "header": self.header,
             "text": self.text,
-            "coordinates": {self.x_axis, self.y_axis},
+            "x_axis": self.x_axis,
+            "y_axis": self.y_axis,
             "color": self.color
         }
 
