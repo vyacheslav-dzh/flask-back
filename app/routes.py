@@ -293,8 +293,10 @@ def update_page():
     db.session.add(page)
     db.session.commit()
 
+    project = Project.query.filter(Project.id == page.project_id).one()
+
     if (page_old_name != response["pageName"]):
-       rename_page_path(page_old_name, response["pageName"])
+       rename_page_path(project.name, page_old_name, response["pageName"])
 
     return '', 200
 
