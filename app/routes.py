@@ -2,7 +2,7 @@
 
 from flask import request, jsonify, send_file
 from app import app, db
-from .lib import Pdf2Tiles, delete_path
+from .lib import Pdf2Tiles, delete_path, rename_project_path, rename_page_path
 from flask_cors import cross_origin
 import os
 
@@ -163,6 +163,12 @@ def get_users():
     return jsonify([i.serialize for i in response])
 
 
+@app.route("/user/<int:id>", methods=["GET"])
+def get_user(id):
+    response = User.query.get(id)
+    return jsonify(response.serialize)
+
+
 @app.route("/delete_user/<int:id>", methods=["GET"])
 def delete_user(id):
     user = User.query.get(id)
@@ -180,14 +186,14 @@ def delete_user(id):
 def delete_project(id):
     project = Project.query.get(id)
  
-    for page in Page.query.filter(Page.project_id == id).all():
-        for layer in Layer.query.filter(Layer.page_id == page.id).all():
-            for marker in Marker.query.filter(Marker.layer_id == layer.id).all(): 
-                for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
-                    db.session.delete(comment)
-                db.session.delete(marker)
-            db.session.delete(layer)
-        db.session.delete(page)
+    # for page in Page.query.filter(Page.project_id == id).all():
+    #     for layer in Layer.query.filter(Layer.page_id == page.id).all():
+    #         for marker in Marker.query.filter(Marker.layer_id == layer.id).all(): 
+    #             for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+    #                 db.session.delete(comment)
+    #             db.session.delete(marker)
+    #         db.session.delete(layer)
+    #     db.session.delete(page)
 
     db.session.delete(project)
     db.session.commit()
@@ -201,12 +207,12 @@ def delete_project(id):
 def delete_page(id):
     page = Page.query.get(id)
 
-    for layer in Layer.query.filter(Layer.page_id == page.id).all():
-        for marker in Marker.query.filter(Marker.layer_id == layer.id).all():
-            for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
-                db.session.delete(comment)
-            db.session.delete(marker)
-        db.session.delete(layer)
+    # for layer in Layer.query.filter(Layer.page_id == page.id).all():
+    #     for marker in Marker.query.filter(Marker.layer_id == layer.id).all():
+    #         for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+    #             db.session.delete(comment)
+    #         db.session.delete(marker)
+    #     db.session.delete(layer)
 
     db.session.delete(page)
     db.session.commit()
@@ -221,10 +227,10 @@ def delete_page(id):
 def delete_layer(id):
     layer = Layer.query.get(id)
 
-    for marker in Marker.query.filter(Marker.layer_id == layer.id).all():
-        for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
-            db.session.delete(comment)
-        db.session.delete(marker)
+    # for marker in Marker.query.filter(Marker.layer_id == layer.id).all():
+    #     for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+    #         db.session.delete(comment)
+    #     db.session.delete(marker)
 
     db.session.delete(layer)
     db.session.commit()
@@ -235,8 +241,8 @@ def delete_layer(id):
 def delete_marker(id):
     marker = Marker.query.get(id)
 
-    for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
-        db.session.delete(comment)
+    # for comment in Comment.query.filter(Comment.marker_id == marker.id).all():
+    #     db.session.delete(comment)
 
     db.session.delete(marker)
     db.session.commit()
@@ -255,11 +261,19 @@ def delete_comment(id):
 @app.route("/update_project", methods=['POST', 'OPTIONS'])
 @cross_origin()
 def update_project():
+
     response = request.json
     project = Project.query.get(response["projectID"])
+
+    project_old_name = project.name
+
     project.name = response["projectName"]
     db.session.add(project)
     db.session.commit()
+
+    if (project_old_name != response["projectName"]):
+        rename_project_path(project_old_name, response["projectName"])
+    
     return '', 200
 
 
@@ -268,9 +282,17 @@ def update_project():
 def update_page():
     response = request.json
     page = Page.query.get(response["pageID"])
+
+    page_old_name = page.name
+
     page.name = response["pageName"]
+
     db.session.add(page)
     db.session.commit()
+
+    if (page_old_name != response["pageName"]):
+       rename_page_path(page_old_name, response["pageName"])
+
     return '', 200
 
 
@@ -297,7 +319,7 @@ def update_marker():
     return '', 200
 
 
-@app.route("/update_marker", methods=['POST', 'OPTIONS'])
+@app.route("/update_comment", methods=['POST', 'OPTIONS'])
 @cross_origin()
 def update_comment():
     response = request.json
