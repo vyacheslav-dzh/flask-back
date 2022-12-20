@@ -19,10 +19,6 @@ def add_project():
     for page in pages:
         page['pageNum'] = int(page['pageNum'])
 
-    filename = response['filename']
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    pdf2tiles = Pdf2Tiles(project_name, pages)
-    path_list = pdf2tiles.run(file_path)
 
     project = Project(
         name=project_name
@@ -33,15 +29,32 @@ def add_project():
 
     project_id = project.id
 
+    pages_id_list = []
     for i in range(len(pages)):
         page = Page(
             project_id=project_id,
             name=pages[i]['pageName'],
-            path=path_list[i]['path'],
-            max_zoom=path_list[i]['zoom']
+            path="null",
+            max_zoom=0
         )
         db.session.add(page)
         db.session.commit()
+        pages_id_list.append(page.id)
+    
+    filename = response['filename']
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    pdf2tiles = Pdf2Tiles(project_name, pages, project_id, pages_id_list)
+    path_list = pdf2tiles.run(file_path)
+
+    
+    for i in range(len(pages_id_list)):
+        page = Page.query.get(pages_id_list[i])
+        page.max_zoom = path_list[i]["zoom"]
+        db.session.add(page)
+        db.session.commit()
+    
+
+    
 
     return '', 200
 
@@ -198,7 +211,7 @@ def delete_project(id):
     db.session.delete(project)
     db.session.commit()
 
-    delete_path(project.name)
+    delete_path(project.id)
 
     return '', 200
 
@@ -218,7 +231,7 @@ def delete_page(id):
     db.session.commit()
 
     project = Project.query.filter(Project.id == page.project_id).one()
-    delete_path(project.name, page.name)
+    delete_path(project.id, page.id)
     
     return '', 200
 
@@ -271,8 +284,8 @@ def update_project():
     db.session.add(project)
     db.session.commit()
 
-    if (project_old_name != response["projectName"]):
-        rename_project_path(project_old_name, response["projectName"])
+    # if (project_old_name != response["projectName"]):
+    #     rename_project_path(project_old_name, response["projectName"])
     
     return '', 200
 
@@ -292,8 +305,8 @@ def update_page():
 
     project = Project.query.filter(Project.id == page.project_id).one()
 
-    if (page_old_name != response["pageName"]):
-       rename_page_path(project.name, page_old_name, response["pageName"])
+    # if (page_old_name != response["pageName"]):
+    #    rename_page_path(project.name, page_old_name, response["pageName"])
 
     return '', 200
 
