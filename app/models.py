@@ -12,7 +12,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 class Project(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode(255), unique=True)
+    name = db.Column(db.Unicode(255))
     #pages = db.relationship('Page', backref='author', lazy='dynamic')
     pages = relationship("Page", cascade="all,delete")
 

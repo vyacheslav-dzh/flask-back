@@ -2,7 +2,7 @@
 
 from flask import request, jsonify, send_file
 from app import app, db
-from .lib import Pdf2Tiles, delete_path, rename_project_path, rename_page_path
+from .lib import Pdf2Tiles, delete_path
 from flask_cors import cross_origin
 import os
 
