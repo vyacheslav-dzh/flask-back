@@ -103,7 +103,8 @@ class Marker(db.Model):
             'layer_id': self.layer_id,
             "header": self.header,
             "text": self.text,
-            "coordinates": {self.x_axis, self.y_axis},
+            "x_axis": self.x_axis,
+            "y_axis": self.y_axis,
             "color": self.color
         }
 

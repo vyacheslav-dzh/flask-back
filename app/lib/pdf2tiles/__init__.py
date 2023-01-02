@@ -8,7 +8,8 @@ import math
 
 
 PROJECT_DIR = app.config['PROJECTS_DIR']
-CUR_DIR = 'C:\\Работа\\Гуртяков\\flask-back\\app\\lib\\pdf2tiles'
+# CUR_DIR = 'C:\\Работа\\Гуртяков\\flask-back\\app\\lib\\pdf2tiles'
+CUR_DIR = os.path.join(app.config['BASE_DIR'], 'app\\lib\\pdf2tiles')
 
 
 def __create_tiles__(img_high, img_medium, img_low, max_zoom, path):
